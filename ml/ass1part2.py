@@ -37,7 +37,8 @@ def gradientDescent(inputParm, cost, theta, alpha, no_iteration):
     m=len(cost);
     J_history = np.zeros(no_iteration);
     dim = data.shape;
-    print(dim);
+    #print(dim);
+    convergenceDirection =0;
     for j in range (0,no_iteration):
         for i in range(0,dim[1]):
             tmpTheta = np.zeros((dim[1],1),dtype=np.float_);
@@ -50,9 +51,18 @@ def gradientDescent(inputParm, cost, theta, alpha, no_iteration):
             tmpTheta[i] = theta[i] - (alpha*tmpTheta[i]);
             theta[i] = tmpTheta[i];
         J_history[j] = computeCost(inputParm,cost,theta);
+        if j>1:
+            if J_history[j]>J_history[j-1]:
+                if convergenceDirection <= 0:
+                    printf("Convergence Direction Change to pos\n")
+                    convergenceDirection = 1
+            else:
+                if convergenceDirection >=0 :
+                    printf("Convergence Direction Change to neg\n")
+                    convergenceDirection = -11
         #printf("Theta[%f,%f] cost [%f]\n",theta[0],theta[1],J_history[j]);
-    printf("itr=%d, j=%f\n",j,J_history[j]);
-    return theta;
+    #printf("itr=%d, j=%f\n",j,J_history[j]);
+    return (theta,J_history);
 
 with open('ex1data2.txt', newline='\n') as csvfile:
      datareader = csv.reader(csvfile, delimiter=',')
@@ -72,17 +82,17 @@ X = np.append(X,X_norm, axis=1)
 fig = plt.figure();
 ax=fig.gca(projection='3d');
 ax.scatter(data[:,0],data[:,1],data[:,2],marker='+');
-alpha = 1
+alpha = 0.03
 num_itr = 400
 dmx=X.shape
 theta = np.zeros((dmx[1],1))
 printf("Theta = ")
 print(theta)
-theta = gradientDescent(X,y,theta,alpha,num_itr);
+[theta,JA] = gradientDescent(X,y,theta,alpha,num_itr);
 printf("Theta computed from gradient descent: \n");
 printf(" [%.4f,%.4f, %.4f] \n", theta[0],theta[1],theta[2]);
 printf('\n');
-#plt.show()
+
 
 # Estimate the price of a 1650 sq-ft, 3 br house
 # ====================== YOUR CODE HERE ======================
@@ -107,6 +117,8 @@ step1 = np.dot(X.transpose(),X)
 step2 = np.dot(X.transpose(),y)
 step3 = la.inv(step1)
 theta = np.dot(step3,step2)
+myY = np.dot(X,theta)
+ax.scatter(data[:,0],data[:,1],myY,marker='^',c='r');
 
 price = 1*theta[0] + 1650*theta[1] + 3*theta[2];
 printf("Theta computed from gradient descent: \n");
@@ -115,4 +127,8 @@ printf('\n');
 
 printf("Predicted price of a 1650 sq-ft, 3 br house using Normal Eqn):\n $%f \n", price)
 
-printf("Program paused. Press enter to continue.\n")
+#plt.show()
+fig2 = plt.figure(2)
+Xaxis = np.arange(0,len(JA),1)
+plt.plot(Xaxis,JA);
+plt.show()
