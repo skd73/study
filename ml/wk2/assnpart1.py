@@ -75,8 +75,15 @@ def costFunction (theta, X, y):
     h = sigmoid(z)
     m = len(y)
     # Calculate ytranspose * log(h)
-    tmp1 = np.dot(y.transpose(),np.log(h))
-    tmp2 = np.dot((1-y).transpose(),np.log(1-h));
+    tmp1 = (y.T).dot(np.log(h))
+    term2 = (1 -y ).T;
+    term3 = 1-h
+    if np.all(term3):
+        tmp2 = term2.dot(np.log(term3))
+    else:
+        tmp2 =0
+    #tmp1 = np.dot(y.transpose(),np.log(h))
+    #tmp2 = np.dot((1-y).transpose(),np.log(1-h));
     J = (-tmp1 - tmp2)/m;
     # Now calculate gradient.
     # Using vectorized formulla to calculate gradient
@@ -131,7 +138,7 @@ def computeGrad (theta, X, y):
     # Grad = 1/m * XTranspose * (h-y)
     #
     grad = np.dot(X.transpose(),(h-y))/m;
-    return grad
+    return grad.flatten();
 
 
 # Main body
@@ -167,9 +174,11 @@ plt.scatter(Xaxis[negInd],Yaxis[negInd],marker='o',c='r')
 #plt.show()
 
 initial_theta = np.zeros((dim[1],1))
+cost=0;
+grad = np.zeros((dim[1],1))
 [cost,grad] = costFunction(initial_theta,X,y)
 
-printf('Cost at initial theta (zeros): %.3f\n', cost);
+printf('Cost initial theta (zeros): %.3f\n', cost);
 printf('Expected cost (approx): 0.693\n');
 printf('Gradient at initial theta (zeros): \n');
 printf(' %.4f \n %.4f \n %.4f\n', grad[0],grad[1],grad[2],);
@@ -179,15 +188,17 @@ printf('Expected gradients (approx):\n -0.1000\n -12.0092\n -11.2628\n');
 initial_theta = np.array([[-24],[0.2],[0.2]])
 [cost,grad] = costFunction(initial_theta,X,y)
 
-printf(' Coast at Theta %.4f \n %.4f \n %.4f\n', grad[0],grad[1],grad[2],);
-printf('theta: %.3f\n', cost);
+printf('At Theta %.4f  %.4f  %.4f\n', initial_theta[0],initial_theta[1],initial_theta[2],);
+printf('Cost: %.3f\n', cost);
 printf('Expected cost (approx): 0.218\n');
 printf('Calcuated gradients           %.3f  %.3f %.3f\n', grad[0],grad[1],grad[2],);
 printf('Expected gradients (approx): 0.043  2.566  2.647\n');
 
 # using min
-#initial_theta = np.array([[-20],[.1],[.4]])
-xopt = opt.fmin_cg(computeCost,x0=initial_theta,args=(X,y), maxiter=400)
+initial_theta = np.array([[0],[0],[0]])
+#xopt = opt.fmin_cg(computeCost,x0=initial_theta,args=(X,y), maxiter=400)
+res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y), method='Nelder-Mead')
+xopt= res.x
 cost = computeCost(xopt,X,y)
 printf("fmin computed Theta=")
 print(xopt)
