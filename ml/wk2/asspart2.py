@@ -87,8 +87,12 @@ def computeGrad(theta,X, y,l):
 
     # You need to return the following variables correctly
     J = 0;
+    X=np.matrix(X);
+    y=np.matrix(y);
+    theta = np.matrix(theta);
+    theta = theta.getT();
     dim=np.shape(theta);
-    theta.reshape(dim[0],1);
+    #theta.reshape(dim[0],1);
     grad = copy.copy(theta);
 
     # ====================== YOUR CODE HERE ======================
@@ -103,10 +107,10 @@ def computeGrad(theta,X, y,l):
     # h = g(X*theta) = sigmoid(X*theta)
     # we do not want to penalise theta0 so setting tmpTheta(1) =0;
 
-    tmpTheta = copy.copy(theta);
+    tmpTheta = np.matrix(copy.copy(theta));
     tmpTheta[0] = 0;
     #print(theta)
-    z = X.dot(theta);
+    z = np.dot(X,theta);
     #h = g(z)
     h = sigmoid(z);
     m = len(y);
@@ -114,7 +118,7 @@ def computeGrad(theta,X, y,l):
     # Now calculate gradient.
     # Using vectorized formulla to calculate gradient
     # Grad = 1/m * XTranspose * (h-y)
-    grad = ((X.T).dot(h-y) + np.multiply(l, tmpTheta))/m;
+    grad = (np.dot(X.getT(),(h-y)) + np.multiply(l, tmpTheta))/m;
 
     ## grad = (X'* (h - y) + l * tmpTheta)/m; '
 
@@ -132,7 +136,11 @@ def computeCost(theta,X, y,l):
 
     # You need to return the following variables correctly
     J = 0;
+    theta = np.matrix(theta);
+    theta = theta.getT();
     dim=np.shape(theta);
+    X=np.matrix(X);
+    y=np.matrix(y);
     #print(dim)
     #grad = np.zeros((dim[0],dim[1]));
 
@@ -148,17 +156,17 @@ def computeCost(theta,X, y,l):
     # h = g(X*theta) = sigmoid(X*theta)
     # we do not want to penalise theta0 so setting tmpTheta(1) =0;
 
-    tmpTheta = copy.copy(theta);
+    tmpTheta = np.matrix(copy.copy(theta));
     tmpTheta[0] = 0;
     #print(theta)
-    z = X.dot(theta);
+    z = np.dot(X,theta);
     #h = g(z)
     h = sigmoid(z);
     m = len(y);
     thetaSqSum = np.sum(np.power(tmpTheta,2), axis=0)
     #print(thetaSqSum)
-    term1 = (-y.T).dot(np.log(h));
-    term2 = ((1-y).T).dot(np.log(1-h))
+    term1 = (-y.getT()).dot(np.log(h));
+    term2 = ((1-y).getT()).dot(np.log(1-h))
     J = (term1 - term2)/np.double(m) + np.double(l/(2*m))*thetaSqSum;
     return J
 
@@ -258,7 +266,7 @@ X = mapFeature(Xaxis, Yaxis);
 dim = np.shape(X)
 printf("X dimensions after mapping = [%d,%d]\n",dim[0],dim[1]);
 # Initialize fitting parameters
-initial_theta = np.zeros((dim[1],1))
+initial_theta = np.zeros((1,dim[1]))
 tdim = np.shape(initial_theta);
 print(tdim);
 printf("inital theta dim = [%d ]\n", tdim[0]);
@@ -270,18 +278,22 @@ l = 1;
 #[cost, grad] = costFunctionReg(initial_theta, X, y, l);
 cost = computeCost(initial_theta, X, y, l);
 grad = computeGrad(initial_theta, X, y, l);
-printf('Cost at initial theta (zeros): %.3f\n', cost);
-printf('Expected cost (approx): 0.693\n');
-printf('Gradient at initial theta (zeros) - first five values only:\n');
-printf(' [%.4f %.4f %.4f %.4f %.4f] \n', grad[0],grad[1],grad[2],grad[3],grad[4]);
-printf('Expected gradients (approx) - first five values only:\n');
-printf(' [0.0085 0.0188 0.0001 0.0503 0.0115]\n');
 
-printf('\nProgram paused. Press enter to continue.\n');
+print(cost);
+printf("Cost at initial theta (zeros): %.3f\n", cost);
+printf("Expected cost (approx): 0.693\n");
+printf("Gradient at initial theta (zeros) - first five values only:\n");
+print(grad.shape)
+printf(" [%.4f %.4f %.4f %.4f %.4f] \n", grad[0],grad[1],grad[2],grad[3],grad[4]);
+printf("Expected gradients (approx) - first five values only:\n");
+printf(" [0.0085 0.0188 0.0001 0.0503 0.0115]\n");
+
+printf("\nProgram paused. Press enter to continue.\n");
 
 # Compute and display cost and gradient
 # with all-ones theta and l = 10
-test_theta = np.ones((dim[1],1),dtype=np.float_);
+l=10;
+test_theta = np.ones((1,dim[1]),dtype=np.float_);
 #[cost, grad] = costFunctionReg(test_theta, X, y, 10);
 cost = computeCost(test_theta, X, y, l);
 grad = computeGrad(test_theta, X, y, l);
@@ -329,7 +341,7 @@ l = 0;
 #options = optimset('GradObj', 'on', 'MaxIter', 400);
 
 #% Optimize
-res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y,l), method='Nelder-Mead')
+res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y,l), method='TNC')
 theta= res.x
 #[theta, J, exit_flag] = ...
 #	fminunc(@(t)(costFunctionReg(t, X, y, lambda)), initial_theta, options);
@@ -353,7 +365,7 @@ printf("l=%d Train Accuracy: %.3f\n",l, tmp.mean() * 100);
 printf("\n");
 
 l = 100;
-res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y,l), method='Nelder-Mead')
+res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y,l), method='TNC')
 theta= res.x
 #[theta, J, exit_flag] = ...
 #	fminunc(@(t)(costFunctionReg(t, X, y, lambda)), initial_theta, options);
