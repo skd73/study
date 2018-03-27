@@ -8,66 +8,10 @@ import sys
 import numpy as np;
 from matplotlib import cm
 from numpy import linalg as la
+sys.path.append('/home/sanjay/home_work/study/ml/lib')
+import mlutils as mu
 
-def printf(format,*args):
-     sys.stdout.write(format % args)
-
-def computeCost(inputParm,cost, theta):
-    #no of training sampleas
-    m=len(cost);
-    computedCost = 0;
-    sizeInput=inputParm.shape;
-    #printf("m= %d, sizes [%d,%d]\n", m, sizeInput[0],sizeInput[1]);
-    # ====================== YOUR CODE HERE ======================
-    # Instructions: Compute the cost of a particular choice of theta
-    #               You should set J to the cost.
-    # Paramter validation: Diimension of X, y and theta should be compatible.
-    #
-    # J(theta) = 1/2m sum i=1 to m (X*Theta - y)' * (X * Theta -y)
-    temp = np.dot(inputParm,theta) - cost;
-    sizetmp = temp.shape;
-#    printf("sizetmp = [%d,%d]\n",sizetmp[0],sizetmp[1]);
-    computedCost = np.dot(temp.transpose(),temp)/(2*m);
-#    printf("in func %f \n", computedCost);
-    return computedCost;
-
-def gradientDescent(inputParm, cost, theta, alpha, no_iteration):
-    #this function calculates gradientDescent.
-    #size of training set
-    m=len(cost);
-    J_history = np.zeros(no_iteration);
-    dim = data.shape;
-    #print(dim);
-    convergenceDirection =0;
-    for j in range (0,no_iteration):
-        for i in range(0,dim[1]):
-            tmpTheta = np.zeros((dim[1],1),dtype=np.float_);
-            predictedCost = np.dot(inputParm,theta);
-            diffToActualCoast = predictedCost - cost;
-            ithClmn = inputParm[:,i];
-            #print(ithClmn.shape);
-            ithClmn = ithClmn.reshape(dim[0],1);
-            tmpTheta[i] = np.dot(diffToActualCoast.transpose(), ithClmn)/m;
-            tmpTheta[i] = theta[i] - (alpha*tmpTheta[i]);
-            theta[i] = tmpTheta[i];
-        J_history[j] = computeCost(inputParm,cost,theta);
-        if j>1:
-            if J_history[j]>J_history[j-1]:
-                if convergenceDirection <= 0:
-                    printf("Convergence Direction Change to pos\n")
-                    convergenceDirection = 1
-            else:
-                if convergenceDirection >=0 :
-                    printf("Convergence Direction Change to neg\n")
-                    convergenceDirection = -11
-        #printf("Theta[%f,%f] cost [%f]\n",theta[0],theta[1],J_history[j]);
-    #printf("itr=%d, j=%f\n",j,J_history[j]);
-    return (theta,J_history);
-
-with open('ex1data2.txt', newline='\n') as csvfile:
-     datareader = csv.reader(csvfile, delimiter=',')
-     mat = list(datareader);
-data = np.array(mat[0:],dtype=np.float_);
+data = mu.readCSVFile('ex1data2.txt')
 dim = data.shape;
 print(dim[0]);print(dim[1]);
 #print(data)
@@ -86,12 +30,12 @@ alpha = 0.03
 num_itr = 400
 dmx=X.shape
 theta = np.zeros((dmx[1],1))
-printf("Theta = ")
+mu.printf("Theta = ")
 print(theta)
-[theta,JA] = gradientDescent(X,y,theta,alpha,num_itr);
-printf("Theta computed from gradient descent: \n");
-printf(" [%.4f,%.4f, %.4f] \n", theta[0],theta[1],theta[2]);
-printf('\n');
+[theta,JA] = mu.coastAndGradientDescentRegression(X,y,theta,alpha,num_itr);
+mu.printf("Theta computed from gradient descent: \n");
+mu.printf(" [%.4f,%.4f, %.4f] \n", theta[0],theta[1],theta[2]);
+mu.printf('\n');
 
 
 # Estimate the price of a 1650 sq-ft, 3 br house
@@ -103,9 +47,9 @@ price = 1*theta[0] + 1650*theta[1] + 3*theta[2] #You should change this
 
 # ============================================================
 
-printf("Predicted price of a 1650 sq-ft, 3 br house using gradient descent):\n $%f \n", price)
+mu.printf("Predicted price of a 1650 sq-ft, 3 br house using gradient descent):\n $%f \n", price)
 
-printf("Program paused. Press enter to continue.\n")
+mu.printf("Program paused. Press enter to continue.\n")
 
 # Now calculate using normal matrix multification.abs
 
@@ -121,11 +65,11 @@ myY = np.dot(X,theta)
 ax.scatter(data[:,0],data[:,1],myY,marker='^',c='r');
 
 price = 1*theta[0] + 1650*theta[1] + 3*theta[2];
-printf("Theta computed from gradient descent: \n");
-printf(" [%.4f,%.4f, %.4f] \n", theta[0],theta[1],theta[2]);
-printf('\n');
+mu.printf("Theta computed from gradient descent: \n");
+mu.printf(" [%.4f,%.4f, %.4f] \n", theta[0],theta[1],theta[2]);
+mu.printf('\n');
 
-printf("Predicted price of a 1650 sq-ft, 3 br house using Normal Eqn):\n $%f \n", price)
+mu.printf("Predicted price of a 1650 sq-ft, 3 br house using Normal Eqn):\n $%f \n", price)
 
 #plt.show()
 fig2 = plt.figure(2)

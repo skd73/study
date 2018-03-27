@@ -1,7 +1,10 @@
 import csv
+import copy
 import math
+import matplotlib.pyplot as plt
 from sklearn import preprocessing as prep
 import sys
+import math
 import numpy as np;
 from numpy import linalg as la
 
@@ -36,7 +39,7 @@ def computeCostRegression(theta,inputParm,cost):
 #    printf("in func %f \n", computedCost);
     return computedCost;
 
-def coastAndGradientDescentRegression(theta, inputParm, cost, alpha, no_iteration):
+def costAndGradientDescentRegression(theta, inputParm, cost, alpha, no_iteration):
     #this function calculates gradientDescent.
     #size of training set
     m=len(cost);
@@ -177,7 +180,6 @@ def coastAndGradientDescentLogisticRegression (theta, X, y):
     return (J,grad)
 
 def GradientDescentLogisticRegression (theta, X, y):
-    J = 0;
     grad = np.zeros((len(theta),1))
     # Instructions: Compute the cost of a particular choice of theta.
     # You should set J to the cost.
@@ -199,3 +201,164 @@ def GradientDescentLogisticRegression (theta, X, y):
     #
     grad = np.dot(X.transpose(),(h-y))/m;
     return grad;
+
+def GradientDescentLogisticRegressionLR(theta, X, y, l):
+    X=np.matrix(X);
+    y=np.matrix(y);
+    theta = np.matrix(theta);
+    theta = theta.getT();
+    dim=np.shape(theta);
+    #theta.reshape(dim[0],1);
+    grad = copy.copy(theta);
+
+    # ====================== YOUR CODE HERE ======================
+    # Instructions: Compute the cost of a particular choice of theta.
+    #               You should set J to the cost.
+    #               Compute the partial derivatives and set grad to the partial
+    #               derivatives of the cost w.r.t. each parameter in theta
+
+    # function used to calculate cost is
+    # J(Theta) = 1/m ( -ytranspose * log ( h) - (1 - y)transpose * log (1 - h) ) + ...
+    # l /2m *sum(theta.^2)
+    # h = g(X*theta) = sigmoid(X*theta)
+    # we do not want to penalise theta0 so setting tmpTheta(1) =0;
+
+    tmpTheta = np.matrix(copy.copy(theta));
+    tmpTheta[0] = 0;
+    #print(theta)
+    z = np.dot(X,theta);
+    #h = g(z)
+    h = sigmoid(z);
+    m = len(y);
+    #J = ( -y' * log(h) - (1 - y)' * log ( 1 - h))/m + (l/(2*m)) * thetaSqSum;
+    # Now calculate gradient.
+    # Using vectorized formulla to calculate gradient
+    # Grad = 1/m * XTranspose * (h-y)
+    grad = (np.dot(X.getT(),(h-y)) + np.multiply(l, tmpTheta))/m;
+    return grad;
+
+
+def computeCostLogisticRegressionLR(theta,X, y,l):
+
+    # COSTFUNCTIONREG Compute cost and gradient for logistic regression with regularization
+    #   J = COSTFUNCTIONREG(theta, X, y, l) computes the cost of using
+    #   theta as the parameter for regularized logistic regression and the
+    #   gradient of the cost w.r.t. to the parameters.
+    # Initialize some useful values
+    m = len(y); # number of training examples
+
+    # You need to return the following variables correctly
+    J = 0;
+    theta = np.matrix(theta);
+    theta = theta.getT();
+    dim=np.shape(theta);
+    X=np.matrix(X);
+    y=np.matrix(y);
+    #print(dim)
+    #grad = np.zeros((dim[0],dim[1]));
+
+    # ====================== YOUR CODE HERE ======================
+    # Instructions: Compute the cost of a particular choice of theta.
+    #               You should set J to the cost.
+    #               Compute the partial derivatives and set grad to the partial
+    #               derivatives of the cost w.r.t. each parameter in theta
+
+    # function used to calculate cost is
+    # J(Theta) = 1/m ( -ytranspose * log ( h) - (1 - y)transpose * log (1 - h) ) + ...
+    # l /2m *sum(theta.^2)
+    # h = g(X*theta) = sigmoid(X*theta)
+    # we do not want to penalise theta0 so setting tmpTheta(1) =0;
+
+    tmpTheta = copy.copy(theta);
+    tmpTheta[0] = 0;
+    #print(theta)
+    z = np.dot(X,theta);
+    #h = g(z)
+    h = sigmoid(z);
+    m = len(y);
+    thetaSqSum = np.sum(np.power(tmpTheta,2), axis=0)
+    #print(thetaSqSum)
+    term1 = (-y.getT()).dot(np.log(h));
+    term2 = ((1-y).getT()).dot(np.log(1-h))
+    J = (term1 - term2)/np.double(m) + np.double(l/(2*m))*thetaSqSum;
+    return J
+
+#function out = mapFeature(X1, X2)
+#% MAPFEATURE Feature mapping function to polynomial features
+#%
+#%   MAPFEATURE(X1, X2) maps the two input features
+#%   to quadratic features used in the regularization exercise.
+#%
+#%   Returns a new feature array with more features, comprising of
+#%   X1, X2, X1.^2, X2.^2, X1*X2, X1*X2.^2, etc..
+#%
+#%   Inputs X1, X2 must be the same size
+#%
+
+def mapFeature(X1,X2):
+    degree = 6;
+    dim = np.shape(X1);
+    if not dim :
+        out    = np.ones((1,1));
+        X1 = np.matrix(X1);
+        X2 = np.matrix(X2);
+    else:
+        out = np.ones((dim[0],1));
+        out.reshape(dim[0],1);
+    dimout = np.shape(out);
+    #print(dimout)
+    #print(dim)
+    #printf("Sise of out [%d,%d], size of input X [%d %d]\n",dimout[0],dimout[1],dim[0],dim[1]);
+    for i in range (1,degree+1):
+        for j in range(0,i+1):
+            X1temp = np.power(X1,(i-j));
+            X2temp = np.power(X2,j);
+            Xtemp = np.multiply(X1temp,X2temp);
+            #out=np.append(out,Xtemp,axis=1)
+            out = np.hstack((out,Xtemp));
+            #print("X");
+            #out(:, end+1) = (X1.^(i-j)).*(X2.^j);
+    return out;
+
+# SImple scatter data
+def plotData(X,y):
+    Xaxis = X[:,0:1]
+    Yaxis = X[:,1:2]
+    posIndex = np.where(y==1);
+    negIndex = np.where(y==0);
+    plt.scatter(Xaxis[posIndex],Yaxis[posIndex], marker='+', label=' y = 1');
+    plt.scatter(Xaxis[negIndex],Yaxis[negIndex], marker='o', label=' y = 0');
+    plt.legend();
+    legend = plt.legend(loc='upper right corner', shadow=True, fontsize='small')
+    legend.get_frame().set_facecolor('#FFCC00')
+
+def plotDecisionBoundary(theta,X,y):
+    '''
+    #PLOTDECISIONBOUNDARY Plots the data points X and y into a new figure with
+    #the decision boundary defined by theta
+    %   PLOTDECISIONBOUNDARY(theta, X,y) plots the data points with + for the
+    %   positive examples and o for the negative examples. X is assumed to be
+    %   a either
+    %   1) Mx3 matrix, where the first column is an all-ones column for the
+    %      intercept.
+    %   2) MxN, N>3 matrix, where the first column is all-ones
+    # Plot Data
+    '''
+    #plotData
+    dim = X.shape;
+    plotData(X[:,1:3],y);
+    if dim[1] <=3:
+        #Only need 2 points to define a line, so choose two endpoints
+        plot_x =  [np.min(X[:,1])-2, np.max(X[:,1])+2];
+        tmpy = np.multiply(theta(1),plot_x) + theta[0];
+        plot_y = np.multiply(-(1/theta[2]),tmpy);
+        plt.plot(plot_x,plot_y);
+    else:
+        u=np.linspace(-1,1.5,50);
+        v=np.linspace(-1,1.5,50);
+        z = np.zeros((len(u),len(v)));
+        for i in range(0,len(u)):
+            for j in range(0,len(v)):
+                z[i,j] = np.dot(mapFeature(u[i],v[j]),theta);
+        z = z.transpose();
+        plt.contour(u,v,z,0)

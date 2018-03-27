@@ -16,137 +16,17 @@ import numpy as np;
 from matplotlib import cm
 from numpy import linalg as la
 from scipy import optimize as opt
-
-def printf(format,*args):
-     sys.stdout.write(format % args)
-
+sys.path.append('/home/sanjay/home_work/study/ml/lib')
+import mlutils as mu
 #============================================
-#Function to calculate sigmoid of matrix x
-def sigmoid (z):
-    return 1/(1 + np.exp(-z))
-
-#Predict
-##############################################
-def predict(theta, X):
-    #PREDICT Predict whether the label is 0 or 1 using learned logistic
-    #regression parameters theta
-    #   p = PREDICT(theta, X) computes the predictions for X using a
-    #   threshold at 0.5 (i.e., if sigmoid(theta'*x) >= 0.5, predict 1)
-
-    m = len(X[:,0:1]); # Number of training examples
-
-    # You need to return the following variables correctly
-    p = np.zeros((m,1))
-
-    #% ====================== YOUR CODE HERE ======================
-    #% Instructions: Complete the following code to make predictions using
-    #%               your learned logistic regression parameters.
-    #%               You should set p to a vector of 0's and 1's
-    #%
-    #% probability that y=1 for given x at theta = hthetha(x) = g(z)
-    z = np.dot(X,theta);
-    h = sigmoid(z);
-    posIndex = np.where(h >= 0.5);
-    p[posIndex] = 1; # htheta(x)>= 0.5 ==> y = 1;
-    return p
-# =========================================================================
-
 
 
 #============================================
 #Function to calculate sigmoid of matrix x
-def sigmoid (z):
-    return 1/(1 + np.exp(-z))
-
-def costFunction (theta, X, y):
-    J = 0;
-    grad = np.zeros((len(theta),1))
-    # Instructions: Compute the cost of a particular choice of theta.
-    # You should set J to the cost.
-    # Compute the partial derivatives and set grad to the partial
-    # derivatives of the cost w.r.t. each parameter in theta
-    #
-    # Note: grad should have the same dimensions as theta
-    #
-    #This function calculate cost for given theta vector.
-    # J(Theta) = 1/m ( -ytranspose * log ( h) - (1 - y)transpose * log (1 - h) );
-    # h = g(z) = sigmoid(X*theta) where z=X*theta;
-    z = np.dot(X,theta);
-    h = sigmoid(z)
-    m = len(y)
-    # Calculate ytranspose * log(h)
-    tmp1 = (y.T).dot(np.log(h))
-    term2 = (1 -y ).T;
-    term3 = 1-h
-    if np.all(term3):
-        tmp2 = term2.dot(np.log(term3))
-    else:
-        tmp2 =0
-    #tmp1 = np.dot(y.transpose(),np.log(h))
-    #tmp2 = np.dot((1-y).transpose(),np.log(1-h));
-    J = (-tmp1 - tmp2)/m;
-    # Now calculate gradient.
-    # Using vectorized formulla to calculate gradient
-    # Grad = 1/m * XTranspose * (h-y)
-    #
-    grad = np.dot(X.transpose(),(h-y))/m;
-    return (J,grad)
-
-
-
-def computeCost (theta, X,y):
-    J = 0;
-    grad = np.zeros((len(theta),1))
-    # Instructions: Compute the cost of a particular choice of theta.
-    # You should set J to the cost.
-    # Compute the partial derivatives and set grad to the partial
-    # derivatives of the cost w.r.t. each parameter in theta
-    #
-    # Note: grad should have the same dimensions as theta
-    #
-    #This function calculate cost for given theta vector.
-    # J(Theta) = 1/m ( -ytranspose * log ( h) - (1 - y)transpose * log (1 - h) );
-    # h = g(z) = sigmoid(X*theta) where z=X*theta;
-    z = np.dot(X,theta);
-    h = sigmoid(z)
-    m = len(y)
-    # Calculate ytranspose * log(h)
-    tmp1 = np.dot(y.transpose(),np.log(h))
-    tmp2 = np.dot((1-y).transpose(),np.log(1-h));
-    J = (-tmp1 - tmp2)/m;
-    return J
-
-def computeGrad (theta, X, y):
-    J = 0;
-    grad = np.zeros((len(theta),1))
-    # Instructions: Compute the cost of a particular choice of theta.
-    # You should set J to the cost.
-    # Compute the partial derivatives and set grad to the partial
-    # derivatives of the cost w.r.t. each parameter in theta
-    #
-    # Note: grad should have the same dimensions as theta
-    #
-    #This function calculate cost for given theta vector.
-    # J(Theta) = 1/m ( -ytranspose * log ( h) - (1 - y)transpose * log (1 - h) );
-    # h = g(z) = sigmoid(X*theta) where z=X*theta;
-    z = np.dot(X,theta);
-    h = sigmoid(z)
-    m = len(y)
-    # Calculate ytranspose * log(h)
-    # Now calculate gradient.
-    # Using vectorized formulla to calculate gradient
-    # Grad = 1/m * XTranspose * (h-y)
-    #
-    grad = np.dot(X.transpose(),(h-y))/m;
-    return grad.flatten();
-
 
 # Main body
 
-with open('ex2data1.txt', newline='\n') as csvfile:
-     datareader = csv.reader(csvfile, delimiter=',')
-     mat = list(datareader);
-data = np.array(mat[0:],dtype=np.float_);
+data = mu.readCSVFile('ex2data1.txt')
 dim = data.shape;
 print(dim[0]);print(dim[1]);
 # put the data in input and output arrays
@@ -163,46 +43,39 @@ Yaxis = data[:,1:2]
 posInd = np.where(y==1)
 negInd = np.where(y==0)
 
-#printf("Xpos =%d, ypos=%d, xneg = %d, y =%d\n",len(Xaxis_pos),len(Yaxis_pos),len(Xaxis_neg),len(Yaxis_neg))
+#mu.printf("Xpos =%d, ypos=%d, xneg = %d, y =%d\n",len(Xaxis_pos),len(Yaxis_pos),len(Xaxis_neg),len(Yaxis_neg))
 fig = plt.figure();
 
 plt.scatter(Xaxis[posInd],Yaxis[posInd],marker='^')
 plt.scatter(Xaxis[negInd],Yaxis[negInd],marker='o',c='r')
-#fig = plt.figure(3);
-#xr = np.arange(-10,10,0.1)
-#plt.plot(xr,sigmoid(xr))
-#plt.show()
 
 initial_theta = np.zeros((dim[1],1))
-cost=0;
-grad = np.zeros((dim[1],1))
-[cost,grad] = costFunction(initial_theta,X,y)
-
-printf('Cost initial theta (zeros): %.3f\n', cost);
-printf('Expected cost (approx): 0.693\n');
-printf('Gradient at initial theta (zeros): \n');
-printf(' %.4f \n %.4f \n %.4f\n', grad[0],grad[1],grad[2],);
-printf('Expected gradients (approx):\n -0.1000\n -12.0092\n -11.2628\n');
+cost = mu.costFunctionLogisticRegression(initial_theta,X,y)
+grad = mu.GradientDescentLogisticRegression(initial_theta,X,y);
+mu.printf('Cost at initial theta (zeros): %.3f\n', cost);
+mu.printf('Expected cost (approx): 0.693\n');
+mu.printf('Gradient at initial theta (zeros): \n');
+mu.printf(' %.4f \n %.4f \n %.4f\n', grad[0],grad[1],grad[2],);
+mu.printf('Expected gradients (approx):\n -0.1000\n -12.0092\n -11.2628\n');
 
 
 initial_theta = np.array([[-24],[0.2],[0.2]])
-[cost,grad] = costFunction(initial_theta,X,y)
+cost = mu.costFunctionLogisticRegression(initial_theta,X,y)
+grad = mu.GradientDescentLogisticRegression(initial_theta,X,y);
 
-printf('At Theta %.4f  %.4f  %.4f\n', initial_theta[0],initial_theta[1],initial_theta[2],);
-printf('Cost: %.3f\n', cost);
-printf('Expected cost (approx): 0.218\n');
-printf('Calcuated gradients           %.3f  %.3f %.3f\n', grad[0],grad[1],grad[2],);
-printf('Expected gradients (approx): 0.043  2.566  2.647\n');
+mu.printf(' Coast at Theta %.4f \n %.4f \n %.4f\n', grad[0],grad[1],grad[2],);
+mu.printf('theta: %.3f\n', cost);
+mu.printf('Expected cost (approx): 0.218\n');
+mu.printf('Calcuated gradients           %.3f  %.3f %.3f\n', grad[0],grad[1],grad[2],);
+mu.printf('Expected gradients (approx): 0.043  2.566  2.647\n');
 
 # using min
-initial_theta = np.array([[0],[0],[0]])
-#xopt = opt.fmin_cg(computeCost,x0=initial_theta,args=(X,y), maxiter=400)
-res = opt.minimize(fun=computeCost, x0=initial_theta, args = (X, y), method='Nelder-Mead')
-xopt= res.x
-cost = computeCost(xopt,X,y)
-printf("fmin computed Theta=")
+#initial_theta = np.array([[-20],[.1],[.4]])
+xopt = opt.fmin_cg(mu.costFunctionLogisticRegression,x0=initial_theta,args=(X,y), maxiter=400)
+cost = mu.costFunctionLogisticRegression(xopt,X,y)
+mu.printf("fmin computed Theta=")
 print(xopt)
-printf("cost = %f\n",cost);
+mu.printf("cost = %f\n",cost);
 #plot decision line
 #
 minx = X[:,2].min(axis=0) - 2
@@ -227,15 +100,15 @@ plt.plot(plot_x, plot_y,c='k');
 x = np.array([1,45,85])
 theta = xopt.reshape(3,1)
 z = np.dot(x,theta)
-prob = sigmoid(z);
-printf("For a student with scores 45 and 85, we predict an admission probability of %.3f\n", prob);
-printf("Expected value: 0.775 +/- 0.002\n\n");
+prob = mu.sigmoid(z);
+mu.printf("For a student with scores 45 and 85, we predict an admission probability of %.3f\n", prob);
+mu.printf("Expected value: 0.775 +/- 0.002\n\n");
 
 # Compute accuracy on our training set
-p = predict(theta, X);
+p = mu.predict(theta, X);
 tmp = np.double(p == y)
-printf("Train Accuracy: %.3f\n", tmp.mean() * 100);
-printf("Expected accuracy (approx): 89.0\n");
-printf("\n");
+mu.printf("Train Accuracy: %.3f\n", tmp.mean() * 100);
+mu.printf("Expected accuracy (approx): 89.0\n");
+mu.printf("\n");
 
 plt.show();
